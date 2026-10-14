@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Solid white background for clean visibility -->
+    <solid android:color="#FFFFFF" />
+
+    <!-- Subtle, professional rounded corners -->
+    <corners android:radius="8dp" />
+
+    <!-- Crisp grey border outline -->
+    <stroke
+        android:width="1.5dp"
+        android:color="#CBD5E1" />
+
+    <!-- Optional inner padding for text inputs and search bars -->
+    <padding
+        android:left="4dp"
+        android:right="4dp"
+        android:top="4dp"
+        android:bottom="4dp" />
+</shape>

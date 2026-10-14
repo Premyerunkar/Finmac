@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFFFFF"
+    android:orientation="vertical">
+
+    <!-- Header Banner -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#052550"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="16dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🗑️ Recycle Bin Directory"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Restore deleted society branches or purge permanently"
+            android:textColor="#93C5FD"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Recycle Bin Branch List RecyclerView with id rvBinBranches -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvBinBranches"
+        android:layout_width="match_parent"
+        android:layout_height="320dp"
+        android:background="#F8FAFC"
+        android:clipToPadding="false"
+        android:padding="12dp" />
+
+</LinearLayout>

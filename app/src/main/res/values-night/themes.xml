@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Application theme override for night mode -->
+    <style name="Theme.Finmac" parent="Base.Theme.Finmac" />
+
+    <!-- Global TextInputLayout Style Rule for Dark Mode -->
+    <style name="CustomTextInputLayoutTheme" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/status_bar_navy</item>
+        <item name="hintTextColor">#64748B</item>
+        <item name="boxStrokeWidth">1.5dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxBackgroundColor">#FFFFFF</item>
+    </style>
+
+    <!-- Active Indicator Style for Dark Mode -->
+    <style name="CustomBottomNavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/nav_indicator_light_blue</item>
+    </style>
+
+</resources>

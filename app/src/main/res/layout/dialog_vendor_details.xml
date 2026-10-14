@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/white"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#052550"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
+
+        <TextView
+            android:id="@+id/txtDialogTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:text="VENDOR PROFILE DETAILS"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/btnCloseDialog"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@android:color/white" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView android:text="Vendor Code" android:textColor="#052550" android:textStyle="bold" android:textSize="12sp" />
+        <TextView android:id="@+id/txtVendorCode" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="#F3F4F6" android:padding="8dp" android:textColor="#1F2937" />
+
+        <TextView android:text="Account Head Name" android:textColor="#052550" android:textStyle="bold" android:textSize="12sp" android:layout_marginTop="10dp" />
+        <TextView android:id="@+id/txtAccountHead" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="#F3F4F6" android:padding="8dp" android:textColor="#1F2937" />
+
+        <TextView android:text="Contact Mobile Number" android:textColor="#052550" android:textStyle="bold" android:textSize="12sp" android:layout_marginTop="10dp" />
+        <TextView android:id="@+id/txtContactNo" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="#F3F4F6" android:padding="8dp" android:textColor="#1F2937" />
+
+        <TextView android:text="PAN Identification" android:textColor="#052550" android:textStyle="bold" android:textSize="12sp" android:layout_marginTop="10dp" />
+        <TextView android:id="@+id/txtPanNo" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="#F3F4F6" android:padding="8dp" android:textColor="#1F2937" />
+
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.sierratechnologies.finmac.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
+
+<!--    <fragment-->
+<!--        android:id="@+id/nav_accounts"-->
+<!--        android:name="com.sierratechnologies.finmac.AccountsFragment"-->
+<!--        android:label="Accounts"-->
+<!--        tools:layout="@layout/fragment_placeholder" />-->
+
+    <fragment
+        android:id="@+id/transactionFragment"
+        android:name="com.sierratechnologies.finmac.TransactionFragment"
+        android:label="Accounts"
+        tools:layout="@layout/fragment_transaction"/>
+
+    <fragment
+        android:id="@+id/nav_transactions"
+        android:name="com.sierratechnologies.finmac.TrialBalanceFragment"
+        android:label="Transactions"
+        tools:layout="@layout/fragment_trial_balance" />
+
+    <fragment
+        android:id="@+id/nav_investments"
+        android:name="com.sierratechnologies.finmac.InvestmentsFragment"
+        android:label="Investments"
+        tools:layout="@layout/fragment_placeholder" />
+
+    <fragment
+        android:id="@+id/nav_profile"
+        android:name="com.sierratechnologies.finmac.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile" />
+
+</navigation>

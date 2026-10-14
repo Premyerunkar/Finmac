@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base application theme -->
+    <style name="Base.Theme.Finmac" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Status Bar Configuration -->
+        <item name="android:statusBarColor">@color/status_bar_navy</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Global Primary & Surface Colors -->
+        <item name="colorPrimary">@color/status_bar_navy</item>
+        <item name="colorSecondary">@color/status_bar_navy</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#0F172A</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="android:colorBackground">#F8FAFC</item>
+        <item name="android:textColorPrimary">#0F172A</item>
+        <item name="android:textColorSecondary">#64748B</item>
+
+        <!-- Material 3 requirement for navigation bars -->
+        <item name="colorOnSurfaceVariant">#64748B</item>
+        <item name="colorSurfaceVariant">#E2E8F0</item>
+
+        <!-- Global Text Input Layout Style Override -->
+        <item name="textInputStyle">@style/CustomTextInputLayoutTheme</item>
+    </style>
+
+    <style name="Theme.Finmac" parent="Base.Theme.Finmac" />
+
+    <!-- Global TextInputLayout Style Rule -->
+    <style name="CustomTextInputLayoutTheme" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/status_bar_navy</item>
+        <item name="hintTextColor">#64748B</item>
+        <item name="boxStrokeWidth">1.5dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxBackgroundColor">#FFFFFF</item>
+    </style>
+
+    <!-- Active Indicator Style -->
+    <style name="CustomBottomNavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/nav_indicator_light_blue</item>
+    </style>
+
+</resources>

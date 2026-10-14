@@ -1,0 +1,3 @@
+- [x] Fix Entry Book Navigation in `HomeFragment.kt`
+- [x] Clean up typos/comments in `ModulesAdapter.kt`
+- [x] Verify activities are correctly referenced in both Homepage and "View All" screens

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFFFFF"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/lblModalTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="Create New Branch Record"
+        android:textColor="#052550"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/etBranchName"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_search_input"
+        android:hint="Branch Name *"
+        android:inputType="textPersonName"
+        android:paddingHorizontal="12dp"
+        android:textColor="#0F172A"
+        android:textSize="13sp" />
+
+    <EditText
+        android:id="@+id/etBranchCode"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_search_input"
+        android:hint="Branch Code (Unique ID) *"
+        android:inputType="textNoSuggestions"
+        android:paddingHorizontal="12dp"
+        android:textColor="#0F172A"
+        android:textSize="13sp" />
+
+    <Spinner
+        android:id="@+id/spinnerDivision"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_search_input" />
+
+    <EditText
+        android:id="@+id/etAddress"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_search_input"
+        android:hint="Street Address"
+        android:inputType="textPostalAddress"
+        android:paddingHorizontal="12dp"
+        android:textColor="#0F172A"
+        android:textSize="13sp" />
+
+    <EditText
+        android:id="@+id/etCity"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_search_input"
+        android:hint="City / Location"
+        android:inputType="textPostalAddress"
+        android:paddingHorizontal="12dp"
+        android:textColor="#0F172A"
+        android:textSize="13sp" />
+
+    <EditText
+        android:id="@+id/etUsername"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_search_input"
+        android:hint="Authorized Login Username *"
+        android:inputType="textNoSuggestions"
+        android:paddingHorizontal="12dp"
+        android:textColor="#0F172A"
+        android:textSize="13sp" />
+
+    <EditText
+        android:id="@+id/etPassword"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_search_input"
+        android:hint="Security Password *"
+        android:inputType="textPassword"
+        android:paddingHorizontal="12dp"
+        android:textColor="#0F172A"
+        android:textSize="13sp" />
+
+    <Button
+        android:id="@+id/btnSubmitBranch"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:backgroundTint="#052550"
+        android:text="Save Record Entry"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:cornerRadius="8dp" />
+</LinearLayout>
