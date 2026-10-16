@@ -172,7 +172,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="071026/1.0"
+                            android:text="141026/1.0"
                             android:textColor="#16A34A"
                             android:textSize="13sp"
                             android:textStyle="bold" />

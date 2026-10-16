@@ -27,6 +27,7 @@
                 android:paddingHorizontal="16dp"
                 android:paddingTop="12dp">
 
+                <!-- Row 1: Back Button & Full-Width Society Header -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -35,11 +36,11 @@
 
                     <ImageView
                         android:id="@+id/btnBack"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="Back"
-                        android:padding="4dp"
+                        android:padding="6dp"
                         android:src="@drawable/abc_ic_ab_back_material"
                         app:tint="#FFFFFF" />
 
@@ -52,28 +53,61 @@
 
                         <TextView
                             android:id="@+id/lblSocietyName"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:singleLine="true"
                             android:text="LOADING SOCIETY..."
                             android:textColor="#FFFFFF"
-                            android:textSize="17sp"
+                            android:textSize="18sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/lblSocietyAddress"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
+                            android:ellipsize="end"
+                            android:singleLine="true"
                             android:text="Address: Synchronizing..."
                             android:textColor="#93C5FD"
-                            android:textSize="11sp" />
+                            android:textSize="12sp" />
                     </LinearLayout>
+                </LinearLayout>
+
+                <!-- Row 2: Executive Action Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnViewMasterAuditLogs"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="📋 Master Change Logs"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        app:cornerRadius="8dp"
+                        app:strokeColor="#FFFFFF"
+                        app:strokeWidth="1dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAddAdmin"
-                        android:layout_width="wrap_content"
-                        android:layout_height="38dp"
-                        android:text="➕ Add Staff"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="➕ Add Staff Profile"
                         android:textColor="#052550"
                         android:textSize="12sp"
                         android:textStyle="bold"

@@ -75,19 +75,59 @@
             android:textSize="11sp" />
 
         <!-- Total Registered Members Pill Badge -->
-        <TextView
-            android:id="@+id/txtTotalMembersCount"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
             android:layout_marginTop="10dp"
-            android:background="#1E3A8A"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="4dp"
-            android:text="Total Registered Members: 0"
-            android:textColor="#E0F2FE"
-            android:textSize="11sp"
-            android:textStyle="bold" />
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/txtTotalMembersCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#1E3A8A"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:text="Total Registered Members: 0"
+                android:textColor="#E0F2FE"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnImportCsv"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="0dp"
+                android:text="📥 Import CSV"
+                android:textColor="#E0F2FE"
+                android:textSize="10sp"
+                app:cornerRadius="6dp"
+                app:strokeColor="#93C5FD"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnExportCsv"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginStart="6dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="0dp"
+                android:text="📤 Export CSV"
+                android:textColor="#E0F2FE"
+                android:textSize="10sp"
+                app:cornerRadius="6dp"
+                app:strokeColor="#93C5FD"
+                app:strokeWidth="1dp" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Search & Order Controls Bar -->
@@ -144,12 +184,73 @@
         </FrameLayout>
     </LinearLayout>
 
+    <!-- Multi-Select Bulk Action Bar -->
+    <LinearLayout
+        android:id="@+id/selectionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/controlsBar"
+        android:background="#EFF6FF"
+        android:elevation="3dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="8dp"
+        android:visibility="gone">
+
+        <CheckBox
+            android:id="@+id/chkSelectAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select All"
+            android:textColor="#052550"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:buttonTint="#052550" />
+
+        <TextView
+            android:id="@+id/lblSelectedCount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:text="0 Selected"
+            android:textColor="#1E3A8A"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteSelectedMembers"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="0dp"
+            android:text="🗑️ Delete"
+            android:textColor="#DC2626"
+            android:textSize="11sp"
+            app:cornerRadius="6dp"
+            app:strokeColor="#DC2626"
+            app:strokeWidth="1dp" />
+
+        <ImageButton
+            android:id="@+id/btnCancelSelection"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="#64748B" />
+    </LinearLayout>
+
     <!-- Main Cards Grid Display Deck -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvCardsGridDeck"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/controlsBar"
+        android:layout_below="@id/selectionBar"
         android:clipToPadding="false"
         android:padding="12dp" />
 
@@ -158,7 +259,7 @@
         android:id="@+id/progressOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/controlsBar"
+        android:layout_below="@id/selectionBar"
         android:background="#F8FAFC"
         android:clickable="true"
         android:focusable="true"

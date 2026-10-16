@@ -36,6 +36,7 @@ class AdminManagementActivity : AppCompatActivity() {
     private lateinit var viewHeaderBackground: View
     private lateinit var btnBack: ImageView
     private lateinit var btnAddAdmin: MaterialButton
+    private lateinit var btnViewMasterAuditLogs: MaterialButton
     private lateinit var lblSocietyName: TextView
     private lateinit var lblSocietyAddress: TextView
 
@@ -81,6 +82,7 @@ class AdminManagementActivity : AppCompatActivity() {
 
         btnBack.setOnClickListener { finish() }
         btnAddAdmin.setOnClickListener { openAdminFormModalSheet(null) }
+        btnViewMasterAuditLogs.setOnClickListener { showMasterChangeLogsSheet() }
 
         txtSearchDeck.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -95,12 +97,211 @@ class AdminManagementActivity : AppCompatActivity() {
         viewHeaderBackground = findViewById(R.id.viewHeaderBackground)
         btnBack = findViewById(R.id.btnBack)
         btnAddAdmin = findViewById(R.id.btnAddAdmin)
+        btnViewMasterAuditLogs = findViewById(R.id.btnViewMasterAuditLogs)
         lblSocietyName = findViewById(R.id.lblSocietyName)
         lblSocietyAddress = findViewById(R.id.lblSocietyAddress)
 
         txtSearchDeck = findViewById(R.id.txtSearchDeck)
         rvAdminCards = findViewById(R.id.rvAdminCards)
         loadingOverlay = findViewById(R.id.loadingOverlay)
+    }
+
+    private fun showMasterChangeLogsSheet() {
+        val sheetDialog = BottomSheetDialog(this)
+        val sheetView = layoutInflater.inflate(R.layout.dialog_cashbook_full_view_sheet, null)
+        sheetDialog.setContentView(sheetView)
+
+        val lblTitle = sheetView.findViewById<TextView>(R.id.lblFullViewSheetTitle)
+        val lblSubtitle = sheetView.findViewById<TextView>(R.id.lblFullViewSheetSubtitle)
+        val btnClose = sheetView.findViewById<ImageView>(R.id.btnCloseFullViewSheet)
+        val txtSearch = sheetView.findViewById<EditText>(R.id.txtFullViewSearch)
+        val btnPdf = sheetView.findViewById<MaterialButton>(R.id.btnFullExportPdf)
+        val btnCsv = sheetView.findViewById<MaterialButton>(R.id.btnFullExportCsv)
+        val rvTable = sheetView.findViewById<RecyclerView>(R.id.rvFullStatementTable)
+
+        btnClose?.setOnClickListener { sheetDialog.dismiss() }
+        btnPdf?.visibility = View.GONE
+        btnCsv?.visibility = View.GONE
+
+        lblTitle?.text = "📋 Master Revision Audit Logs"
+        lblSubtitle?.text = "Fetching modification notes across branches..."
+
+        rvTable?.layoutManager = LinearLayoutManager(this)
+
+        lifecycleScope.launch {
+            try {
+                val auditLogs = SupabaseClientManager.postgrest.from("voucher_audit_logs")
+                    .select()
+                    .decodeList<VoucherAuditLogDto>()
+
+                lblSubtitle?.text = "Total Audit Logs Recorded: ${auditLogs.size}"
+
+                class AuditLogsAdapter(private val logs: List<VoucherAuditLogDto>) :
+                    RecyclerView.Adapter<AuditLogsAdapter.VH>() {
+
+                    inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+                        val txtInvoice: TextView = v.findViewById(R.id.txtAuditInvoice)
+                        val txtTimestamp: TextView = v.findViewById(R.id.txtAuditTimestamp)
+                        val txtUser: TextView = v.findViewById(R.id.txtAuditUser)
+                        val txtReasonNote: TextView = v.findViewById(R.id.txtAuditReasonNote)
+                    }
+
+                    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+                        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_audit_log_row, parent, false)
+                        return VH(v)
+                    }
+
+                    override fun onBindViewHolder(holder: VH, position: Int) {
+                        val item = logs[position]
+                        holder.txtInvoice.text = "#${item.invoiceNo} (${item.branchCode})"
+                        holder.txtTimestamp.text = item.timestamp
+                        holder.txtUser.text = "👤 Modified By: ${item.modifiedBy}"
+                        holder.txtReasonNote.text = "✏️ Reason: ${item.reasonNote ?: "N/A"}"
+
+                        holder.itemView.setOnClickListener {
+                            showDetailedAuditLogModalSheet(item)
+                        }
+                    }
+
+                    override fun getItemCount() = logs.size
+                }
+
+                val adapter = AuditLogsAdapter(auditLogs)
+                rvTable?.adapter = adapter
+
+                txtSearch?.addTextChangedListener(object : TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    override fun afterTextChanged(s: Editable?) {
+                        val q = s.toString().trim().lowercase(Locale.getDefault())
+                        val filtered = auditLogs.filter {
+                            it.invoiceNo.lowercase().contains(q) ||
+                                    it.branchCode.lowercase().contains(q) ||
+                                    it.modifiedBy.lowercase().contains(q) ||
+                                    (it.reasonNote?.lowercase()?.contains(q) == true)
+                        }
+                        rvTable?.adapter = AuditLogsAdapter(filtered)
+                    }
+                })
+            } catch (e: Exception) {
+                lblSubtitle?.text = "Failed to load audit logs: ${e.message}"
+            }
+        }
+
+        sheetDialog.show()
+    }
+
+    private fun showDetailedAuditLogModalSheet(log: VoucherAuditLogDto) {
+        val sheetDialog = BottomSheetDialog(this)
+        val sheetView = layoutInflater.inflate(R.layout.layout_recent_transactions_sheet, null)
+        sheetDialog.setContentView(sheetView)
+
+        val txtSearch = sheetView.findViewById<EditText>(R.id.txtSearchRecent)
+        txtSearch?.visibility = View.GONE
+
+        val rvLogs = sheetView.findViewById<RecyclerView>(R.id.rvRecentTransactions)
+        rvLogs?.layoutManager = LinearLayoutManager(this)
+
+        lifecycleScope.launch {
+            try {
+                var sName = "Branch ${log.branchCode}"
+                var sReg = "REG-MH-26/X4911"
+                var sAddr = "Head Office"
+
+                try {
+                    val branchList = SupabaseClientManager.postgrest.from("branches")
+                        .select { filter { eq("code", log.branchCode) } }
+                        .decodeList<BranchDto>()
+                    if (branchList.isNotEmpty()) {
+                        val b = branchList.first()
+                        sName = b.name
+                        sReg = b.registrationNo ?: sReg
+                        sAddr = b.address ?: sAddr
+                    }
+                } catch (_: Exception) {}
+
+                var partyStr = "N/A"
+                var categoryStr = "N/A"
+                var modeStr = "N/A"
+                var amountStr = "N/A"
+
+                try {
+                    val receipts = SupabaseClientManager.postgrest.from("receipts")
+                        .select { filter { eq("branch_code", log.branchCode); eq("invoice_no", log.invoiceNo) } }
+                        .decodeList<ReceiptDto>()
+                    if (receipts.isNotEmpty()) {
+                        val r = receipts.first()
+                        partyStr = "${r.partyName} (${r.flatNo ?: "N/A"})"
+                        categoryStr = r.categoryHead
+                        modeStr = r.paymentMode ?: "Cash"
+                        amountStr = String.format("₹%,.2f", r.totalFinalAmount)
+                    } else {
+                        val payments = SupabaseClientManager.postgrest.from("payments")
+                            .select { filter { eq("branch_code", log.branchCode); eq("invoice_no", log.invoiceNo) } }
+                            .decodeList<PaymentDto>()
+                        if (payments.isNotEmpty()) {
+                            val p = payments.first()
+                            partyStr = "${p.partyName} (${p.vendorCode ?: "N/A"})"
+                            categoryStr = p.categoryHead
+                            modeStr = p.paymentMode ?: "Cash"
+                            amountStr = String.format("₹%,.2f", p.totalFinalAmount)
+                        } else {
+                            val contra = SupabaseClientManager.postgrest.from("contra_entries")
+                                .select { filter { eq("branch_code", log.branchCode); eq("voucher_no", log.invoiceNo) } }
+                                .decodeList<ContraEntryDto>()
+                            if (contra.isNotEmpty()) {
+                                val c = contra.first()
+                                partyStr = c.partyName
+                                categoryStr = "Contra Transfer"
+                                modeStr = "${c.sourceAccount} -> ${c.destinationAccount}"
+                                amountStr = String.format("₹%,.2f", c.amount)
+                            }
+                        }
+                    }
+                } catch (_: Exception) {}
+
+                val details = listOf(
+                    "Society Branch Name" to "$sName (${log.branchCode})",
+                    "Society Registration No" to sReg,
+                    "Voucher Invoice Number" to "#${log.invoiceNo}",
+                    "Modified By User" to log.modifiedBy,
+                    "Modification Timestamp" to log.timestamp,
+                    "Modification Reason Note" to (log.reasonNote ?: "N/A"),
+                    "Transaction Party Name" to partyStr,
+                    "Account Head Category" to categoryStr,
+                    "Payment Clearing Mode" to modeStr,
+                    "Total Valuation Amount" to amountStr
+                )
+
+                class AuditDetailAdapter : RecyclerView.Adapter<AuditDetailAdapter.VH>() {
+                    inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+                        val txtLabel: TextView = v.findViewById(android.R.id.text1)
+                        val txtValue: TextView = v.findViewById(android.R.id.text2)
+                    }
+                    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+                        val v = LayoutInflater.from(parent.context).inflate(android.R.layout.simple_list_item_2, parent, false)
+                        return VH(v)
+                    }
+                    override fun onBindViewHolder(holder: VH, position: Int) {
+                        val (lbl, valStr) = details[position]
+                        holder.txtLabel.text = lbl
+                        holder.txtLabel.setTextColor(Color.parseColor("#64748B"))
+                        holder.txtLabel.textSize = 12f
+
+                        holder.txtValue.text = valStr
+                        holder.txtValue.setTextColor(if (lbl.contains("Reason")) Color.parseColor("#92400E") else Color.parseColor("#0F172A"))
+                        holder.txtValue.textSize = 14f
+                    }
+                    override fun getItemCount() = details.size
+                }
+
+                rvLogs?.adapter = AuditDetailAdapter()
+            } catch (e: Exception) {
+                Toast.makeText(this@AdminManagementActivity, "Error opening audit log detail: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        sheetDialog.show()
     }
 
     private fun setupWindowInsets() {

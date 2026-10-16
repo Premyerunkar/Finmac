@@ -97,6 +97,7 @@ class ProfileFragment : Fragment() {
                 .setTitle("Terminate Session")
                 .setMessage("Are you sure you want to log out of the active Finmac operational ledger?")
                 .setPositiveButton("Logout") { _, _ ->
+                    AppCache.clearAllInMemoryCache()
                     val sharedPref = requireContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE)
                     sharedPref.edit().clear().apply()
 

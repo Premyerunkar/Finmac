@@ -73,6 +73,8 @@ class VoucherTransactionActivity : AppCompatActivity() {
     private lateinit var tilEntityCode: TextInputLayout
     private lateinit var txtEntityCode: EditText
     private lateinit var txtPartyName: EditText
+    private lateinit var cardPartyIdentification: View
+    private lateinit var txtVoucherDate: EditText
 
     private lateinit var groupCategory: LinearLayout
     private lateinit var containerAccountGroup: LinearLayout
@@ -181,6 +183,13 @@ class VoucherTransactionActivity : AppCompatActivity() {
         lblInvoiceNum = findViewById(R.id.lblInvoiceNum)
         toggleModeGroup = findViewById(R.id.toggleModeGroup)
 
+        cardPartyIdentification = findViewById(R.id.cardPartyIdentification)
+        txtVoucherDate = findViewById(R.id.txtVoucherDate)
+
+        val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        txtVoucherDate.setText(todayStr)
+        txtVoucherDate.setOnClickListener { showVoucherDatePickerDialog() }
+
         tilEntityCode = findViewById(R.id.tilEntityCode)
         txtEntityCode = findViewById(R.id.txtEntityCode)
         txtPartyName = findViewById(R.id.txtPartyName)
@@ -217,12 +226,45 @@ class VoucherTransactionActivity : AppCompatActivity() {
         }
         spnPaymentMode.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                bankSelectionGroup.visibility = if (position == 1 && currentMode != VoucherMode.CONTRA) View.VISIBLE else View.GONE
+                bankSelectionGroup.visibility = if (position == 1) View.VISIBLE else View.GONE
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
         btnDownloadPdf.isEnabled = false
+    }
+
+    private fun showVoucherDatePickerDialog() {
+        val cal = Calendar.getInstance()
+        val existingText = txtVoucherDate.text.toString().trim()
+
+        if (existingText.isNotBlank()) {
+            try {
+                val parts = existingText.split("-", "/", ".")
+                if (parts.size == 3) {
+                    if (parts[0].length == 4) { // YYYY-MM-DD
+                        cal.set(Calendar.YEAR, parts[0].toInt())
+                        cal.set(Calendar.MONTH, parts[1].toInt() - 1)
+                        cal.set(Calendar.DAY_OF_MONTH, parts[2].toInt())
+                    } else if (parts[2].length == 4) { // DD-MM-YYYY
+                        cal.set(Calendar.DAY_OF_MONTH, parts[0].toInt())
+                        cal.set(Calendar.MONTH, parts[1].toInt() - 1)
+                        cal.set(Calendar.YEAR, parts[2].toInt())
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
+        android.app.DatePickerDialog(
+            this,
+            { _, year, month, day ->
+                val formattedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day)
+                txtVoucherDate.setText(formattedDate)
+            },
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH),
+            cal.get(Calendar.DAY_OF_MONTH)
+        ).show()
     }
 
     private fun setFormFieldsLocked(locked: Boolean) {
@@ -327,6 +369,7 @@ class VoucherTransactionActivity : AppCompatActivity() {
         when (mode) {
             VoucherMode.RECEIPT -> {
                 lblHeaderTitle.text = "RECEIPT VOUCHER ENTRY"
+                cardPartyIdentification.visibility = View.VISIBLE
                 tilEntityCode.hint = "Flat / Unit Code *"
                 groupCategory.visibility = View.VISIBLE
                 groupStandardMode.visibility = View.VISIBLE
@@ -343,6 +386,7 @@ class VoucherTransactionActivity : AppCompatActivity() {
             }
             VoucherMode.PAYMENT -> {
                 lblHeaderTitle.text = "PAYMENT DISBURSEMENT"
+                cardPartyIdentification.visibility = View.VISIBLE
                 tilEntityCode.hint = "Vendor Code *"
                 groupCategory.visibility = View.VISIBLE
                 groupStandardMode.visibility = View.VISIBLE
@@ -360,11 +404,50 @@ class VoucherTransactionActivity : AppCompatActivity() {
             }
             VoucherMode.CONTRA -> {
                 lblHeaderTitle.text = "CONTRA VAULT TRANSFER"
-                tilEntityCode.hint = "Associated Flat Code *"
+                cardPartyIdentification.visibility = View.GONE
                 groupCategory.visibility = View.GONE
-                groupStandardMode.visibility = View.GONE
+                groupStandardMode.visibility = View.VISIBLE
                 groupContraAccounts.visibility = View.VISIBLE
                 tilFine.visibility = View.GONE
+
+                val creditOptions = ArrayList<String>().apply {
+                    add("-- Optional Credit Category --")
+                    addAll(
+                        listOf(
+                            "Bank Intrest", "Deposits Recieved", "Entry Fee", "Fixed Deposit Maturity",
+                            "Maintainance Collection", "Monthly Contributions", "Other Charges",
+                            "Parking Charges", "Reserve Funds", "Share Capital", "Sinking Fund"
+                        )
+                    )
+                    for (custom in branchCustomCategories) {
+                        if (custom.voucherType.equalsIgnoreCase("ALL") || custom.voucherType.equalsIgnoreCase("RECEIPT")) {
+                            if (!contains(custom.categoryHead)) add(custom.categoryHead)
+                        }
+                    }
+                }
+
+                val debitOptions = ArrayList<String>().apply {
+                    add("-- Optional Debit Category --")
+                    addAll(
+                        listOf(
+                            "Audit Fees", "Bank Charges", "Clearing Expenses", "Deposit Refund",
+                            "Diwali Bonus", "Electrical Repairs and Materials", "Maintainance Expenses",
+                            "Miscellaneous Expenses", "Monthly Contributions", "P & L Accounts",
+                            "Reserve Fund Deposit", "Salary Expenses", "Temporary Labour Charges"
+                        )
+                    )
+                    for (custom in branchCustomCategories) {
+                        if (custom.voucherType.equalsIgnoreCase("ALL") || custom.voucherType.equalsIgnoreCase("PAYMENT")) {
+                            if (!contains(custom.categoryHead)) add(custom.categoryHead)
+                        }
+                    }
+                }
+
+                val srcAdapter = ArrayAdapter(this, R.layout.spinner_item, creditOptions).apply { setDropDownViewResource(R.layout.spinner_dropdown_item) }
+                spnSourceAccount.adapter = srcAdapter
+
+                val destAdapter = ArrayAdapter(this, R.layout.spinner_item, debitOptions).apply { setDropDownViewResource(R.layout.spinner_dropdown_item) }
+                spnDestinationAccount.adapter = destAdapter
             }
         }
 
@@ -406,6 +489,7 @@ class VoucherTransactionActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
+        bankSelectionGroup.visibility = if (spnPaymentMode.selectedItemPosition == 1) View.VISIBLE else View.GONE
         calculateFinancials()
     }
 
@@ -912,8 +996,13 @@ class VoucherTransactionActivity : AppCompatActivity() {
         val partyName = txtPartyName.text.toString().trim()
         val baseAmount = txtBaseAmount.text.toString().toDoubleOrNull() ?: 0.0
 
-        if (code.isEmpty() || partyName.isEmpty() || baseAmount <= 0.0) {
-            Toast.makeText(this, "Please populate required parameter inputs (*)", Toast.LENGTH_SHORT).show()
+        if (currentMode != VoucherMode.CONTRA && (code.isEmpty() || partyName.isEmpty())) {
+            Toast.makeText(this, "Please populate required party parameter inputs (*)", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (baseAmount <= 0.0) {
+            Toast.makeText(this, "Please enter a valid amount greater than zero (*)", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -1051,83 +1140,62 @@ class VoucherTransactionActivity : AppCompatActivity() {
                     } catch (_: Exception) { emptyList() }
 
                 if (currentMode == VoucherMode.CONTRA) {
-                    val src = spnSourceAccount.selectedItem?.toString() ?: "Cash in Hand Account"
-                    val dest = spnDestinationAccount.selectedItem?.toString() ?: "Default Bank"
+                    val rawSrc = spnSourceAccount.selectedItem?.toString() ?: ""
+                    val rawDest = spnDestinationAccount.selectedItem?.toString() ?: ""
+
+                    val src = if (rawSrc.startsWith("--")) "General Credit" else rawSrc
+                    val dest = if (rawDest.startsWith("--")) "General Debit" else rawDest
                     val requiredAmount = txtBaseAmount.text.toString().toDoubleOrNull() ?: 0.0
 
-                    if (src == dest) {
-                        loadingOverlay.visibility = View.GONE
-                        Toast.makeText(this@VoucherTransactionActivity, "Source and Destination cannot be identical", Toast.LENGTH_SHORT).show()
-                        return@launch
+                    val isBankClearing = spnPaymentMode.selectedItemPosition == 1
+                    val selectedBankLabel = if (isBankClearing) spnBank.selectedItem?.toString() ?: "N/A" else "Cash"
+                    val targetAccNo = bankNameToAccMap[selectedBankLabel] ?: "N/A"
+
+                    // If Clearing Mode is Bank Transfer, update Target Bank Balance in Supabase and AppCache
+                    if (isBankClearing && targetAccNo != "N/A") {
+                        val targetBank = bankAccountsList.find { it.accountNumber == targetAccNo }
+                        if (targetBank != null) {
+                            val newBal = targetBank.currentBalance + requiredAmount
+                            val jsonPayload = buildJsonObject {
+                                put("current_balance", newBal)
+                            }
+                            SupabaseClientManager.postgrest.from("bank_accounts").update(jsonPayload) {
+                                filter { eq("branch_code", activeBranchCode); eq("account_number", targetAccNo) }
+                            }
+                        }
                     }
 
-                    // 1. Strict Balance Pre-Check for Contra Source
-                    if (src.contains("Cash", ignoreCase = true)) {
-                        val liveCash = computeLiveCashInHandBalance()
-                        if (requiredAmount > liveCash) {
-                            showBalanceBlockAlert(
-                                "⚠️ Insufficient Cash Vault Funds",
-                                String.format(Locale.getDefault(), "Transaction Aborted!\nAvailable Cash in Hand: ₹%,.2f\nRequired: ₹%,.2f", liveCash, requiredAmount)
-                            )
-                            return@launch
+                    val voucherDateInput = txtVoucherDate.text.toString().trim().ifBlank { currentDate }
+
+                    if (isEditing) {
+                        val contraPayload = buildJsonObject {
+                            put("date", voucherDateInput)
+                            put("party_name", "Contra ($src -> $dest)")
+                            put("source_account", src)
+                            put("destination_account", dest)
+                            put("amount", requiredAmount)
+                            put("narration", txtNarration.text.toString().trim())
+                            put("operator_identity", activeUsername)
+                            put("rejection_or_change_reason", reasonNote)
+                        }
+                        SupabaseClientManager.postgrest.from("contra_entries").update(contraPayload) {
+                            filter { eq("branch_code", activeBranchCode); eq("voucher_no", targetVoucherID) }
                         }
                     } else {
-                        val srcAccNo = bankNameToAccMap[src] ?: ""
-                        val srcBank = bankAccountsList.find { it.accountNumber == srcAccNo || src.contains(it.bankName, ignoreCase = true) }
-                        val availableBankBal = srcBank?.currentBalance ?: 0.0
-
-                        if (requiredAmount > availableBankBal) {
-                            showBalanceBlockAlert(
-                                "⚠️ Insufficient Bank Vault Funds",
-                                String.format(Locale.getDefault(), "Transaction Aborted!\nAvailable in %s: ₹%,.2f\nRequired: ₹%,.2f", srcBank?.bankName ?: src, availableBankBal, requiredAmount)
-                            )
-                            return@launch
-                        }
-                    }
-
-                    val contraDto = ContraEntryDto(
-                        branchCode = activeBranchCode,
-                        voucherNo = targetVoucherID,
-                        date = currentDate,
-                        flatNo = txtEntityCode.text.toString().trim(),
-                        partyName = txtPartyName.text.toString().trim(),
-                        sourceAccount = src,
-                        destinationAccount = dest,
-                        amount = requiredAmount,
-                        narration = txtNarration.text.toString().trim(),
-                        operatorIdentity = activeUsername,
-                        rejectionOrChangeReason = if (isEditing) reasonNote else ""
-                    )
-
-                    SupabaseClientManager.postgrest.from("contra_entries").upsert(contraDto)
-
-                    // Update Source / Destination Bank balances in Supabase
-                    if (!src.contains("Cash", ignoreCase = true)) {
-                        val srcAccNo = bankNameToAccMap[src] ?: ""
-                        val srcBank = bankAccountsList.find { it.accountNumber == srcAccNo || src.contains(it.bankName, ignoreCase = true) }
-                        if (srcBank != null) {
-                            val newBal = srcBank.currentBalance - requiredAmount
-                            val jsonPayload = buildJsonObject {
-                                put("current_balance", newBal)
-                            }
-                            SupabaseClientManager.postgrest.from("bank_accounts").update(jsonPayload) {
-                                filter { eq("branch_code", activeBranchCode); eq("account_number", srcBank.accountNumber) }
-                            }
-                        }
-                    }
-
-                    if (!dest.contains("Cash", ignoreCase = true)) {
-                        val destAccNo = bankNameToAccMap[dest] ?: ""
-                        val destBank = bankAccountsList.find { it.accountNumber == destAccNo || dest.contains(it.bankName, ignoreCase = true) }
-                        if (destBank != null) {
-                            val newBal = destBank.currentBalance + requiredAmount
-                            val jsonPayload = buildJsonObject {
-                                put("current_balance", newBal)
-                            }
-                            SupabaseClientManager.postgrest.from("bank_accounts").update(jsonPayload) {
-                                filter { eq("branch_code", activeBranchCode); eq("account_number", destBank.accountNumber) }
-                            }
-                        }
+                        val contraDto = ContraEntryDto(
+                            branchCode = activeBranchCode,
+                            voucherNo = targetVoucherID,
+                            date = voucherDateInput,
+                            flatNo = "CONTRA",
+                            partyName = "Contra ($src -> $dest)",
+                            sourceAccount = src,
+                            destinationAccount = dest,
+                            amount = requiredAmount,
+                            narration = txtNarration.text.toString().trim(),
+                            operatorIdentity = activeUsername,
+                            rejectionOrChangeReason = ""
+                        )
+                        SupabaseClientManager.postgrest.from("contra_entries").insert(contraDto)
                     }
                 } else if (currentMode == VoucherMode.RECEIPT) {
                     val baseAmount = txtBaseAmount.text.toString().toDoubleOrNull() ?: 0.0
@@ -1136,29 +1204,50 @@ class VoucherTransactionActivity : AppCompatActivity() {
                     val selectedBankLabel = if (spnPaymentMode.selectedItemPosition == 1) spnBank.selectedItem?.toString() ?: "N/A" else "N/A"
                     val targetAccNo = bankNameToAccMap[selectedBankLabel] ?: "N/A"
 
-                    val receiptDto = ReceiptDto(
-                        branchCode = activeBranchCode,
-                        invoiceNo = targetVoucherID,
-                        date = currentDate,
-                        flatNo = txtEntityCode.text.toString().trim(),
-                        partyName = txtPartyName.text.toString().trim(),
-                        categoryHead = (spnCategory.selectedItem?.toString() ?: "General"),
-                        accountGroup = (spnAccountGroup.selectedItem?.toString() ?: "INCOME"),
-                        customNarration = txtNarration.text.toString().trim(),
-                        paymentMode = (spnPaymentMode.selectedItem?.toString() ?: "Cash"),
-                        selectedBank = selectedBankLabel,
-                        linkedAccountNo = targetAccNo,
-                        baseAmount = baseAmount,
-                        fineAmount = fineVal,
-                        totalFinalAmount = totalAmount,
-                        operatorAccountIdentity = activeUsername,
-                        rejectionOrChangeReason = if (isEditing) reasonNote else ""
-                    )
-
-                    SupabaseClientManager.postgrest.from("receipts").upsert(receiptDto)
+                    if (isEditing) {
+                        val receiptPayload = buildJsonObject {
+                            put("date", currentDate)
+                            put("flat_no", txtEntityCode.text.toString().trim())
+                            put("party_name", txtPartyName.text.toString().trim())
+                            put("category_head", spnCategory.selectedItem?.toString() ?: "General")
+                            put("account_group", spnAccountGroup.selectedItem?.toString() ?: "INCOME")
+                            put("custom_narration", txtNarration.text.toString().trim())
+                            put("payment_mode", spnPaymentMode.selectedItem?.toString() ?: "Cash")
+                            put("selected_bank", selectedBankLabel)
+                            put("linked_account_no", targetAccNo)
+                            put("base_amount", baseAmount)
+                            put("fine_amount", fineVal)
+                            put("total_final_amount", totalAmount)
+                            put("operator_account_identity", activeUsername)
+                            put("rejection_or_change_reason", reasonNote)
+                        }
+                        SupabaseClientManager.postgrest.from("receipts").update(receiptPayload) {
+                            filter { eq("branch_code", activeBranchCode); eq("invoice_no", targetVoucherID) }
+                        }
+                    } else {
+                        val receiptDto = ReceiptDto(
+                            branchCode = activeBranchCode,
+                            invoiceNo = targetVoucherID,
+                            date = currentDate,
+                            flatNo = txtEntityCode.text.toString().trim(),
+                            partyName = txtPartyName.text.toString().trim(),
+                            categoryHead = (spnCategory.selectedItem?.toString() ?: "General"),
+                            accountGroup = (spnAccountGroup.selectedItem?.toString() ?: "INCOME"),
+                            customNarration = txtNarration.text.toString().trim(),
+                            paymentMode = (spnPaymentMode.selectedItem?.toString() ?: "Cash"),
+                            selectedBank = selectedBankLabel,
+                            linkedAccountNo = targetAccNo,
+                            baseAmount = baseAmount,
+                            fineAmount = fineVal,
+                            totalFinalAmount = totalAmount,
+                            operatorAccountIdentity = activeUsername,
+                            rejectionOrChangeReason = ""
+                        )
+                        SupabaseClientManager.postgrest.from("receipts").insert(receiptDto)
+                    }
 
                     // Update Target Bank Balance for Bank Receipt
-                    if (spnPaymentMode.selectedItemPosition == 1 && targetAccNo != "N/A") {
+                    if (spnPaymentMode.selectedItemPosition == 1 && targetAccNo != "N/A" && !isEditing) {
                         val targetBank = bankAccountsList.find { it.accountNumber == targetAccNo }
                         if (targetBank != null) {
                             val newBal = targetBank.currentBalance + totalAmount
@@ -1181,7 +1270,7 @@ class VoucherTransactionActivity : AppCompatActivity() {
                     val isCashPayment = spnPaymentMode.selectedItemPosition == 0
 
                     // 2. Strict Balance Pre-Check for Payment
-                    if (isCashPayment) {
+                    if (isCashPayment && !isEditing) {
                         val liveCash = computeLiveCashInHandBalance()
                         if (totalAmount > liveCash) {
                             showBalanceBlockAlert(
@@ -1190,7 +1279,7 @@ class VoucherTransactionActivity : AppCompatActivity() {
                             )
                             return@launch
                         }
-                    } else {
+                    } else if (!isCashPayment && !isEditing) {
                         val targetBank = bankAccountsList.find { it.accountNumber == targetAccNo }
                         val availableBankBal = targetBank?.currentBalance ?: 0.0
 
@@ -1203,26 +1292,47 @@ class VoucherTransactionActivity : AppCompatActivity() {
                         }
                     }
 
-                    val paymentDto = PaymentDto(
-                        branchCode = activeBranchCode,
-                        invoiceNo = targetVoucherID,
-                        date = currentDate,
-                        vendorCode = txtEntityCode.text.toString().trim(),
-                        partyName = txtPartyName.text.toString().trim(),
-                        categoryHead = (spnCategory.selectedItem?.toString() ?: "General"),
-                        accountGroup = (spnAccountGroup.selectedItem?.toString() ?: "EXPENSE"),
-                        customNarration = txtNarration.text.toString().trim(),
-                        paymentMode = (spnPaymentMode.selectedItem?.toString() ?: "Cash"),
-                        selectedBank = selectedBankLabel,
-                        linkedAccountNo = targetAccNo,
-                        baseAmount = baseAmount,
-                        fineAmount = fineVal,
-                        totalFinalAmount = totalAmount,
-                        operatorAccountIdentity = activeUsername,
-                        rejectionOrChangeReason = if (isEditing) reasonNote else ""
-                    )
-
-                    SupabaseClientManager.postgrest.from("payments").upsert(paymentDto)
+                    if (isEditing) {
+                        val paymentPayload = buildJsonObject {
+                            put("date", currentDate)
+                            put("vendor_code", txtEntityCode.text.toString().trim())
+                            put("party_name", txtPartyName.text.toString().trim())
+                            put("category_head", spnCategory.selectedItem?.toString() ?: "General")
+                            put("account_group", spnAccountGroup.selectedItem?.toString() ?: "EXPENSE")
+                            put("custom_narration", txtNarration.text.toString().trim())
+                            put("payment_mode", spnPaymentMode.selectedItem?.toString() ?: "Cash")
+                            put("selected_bank", selectedBankLabel)
+                            put("linked_account_no", targetAccNo)
+                            put("base_amount", baseAmount)
+                            put("fine_amount", fineVal)
+                            put("total_final_amount", totalAmount)
+                            put("operator_account_identity", activeUsername)
+                            put("rejection_or_change_reason", reasonNote)
+                        }
+                        SupabaseClientManager.postgrest.from("payments").update(paymentPayload) {
+                            filter { eq("branch_code", activeBranchCode); eq("invoice_no", targetVoucherID) }
+                        }
+                    } else {
+                        val paymentDto = PaymentDto(
+                            branchCode = activeBranchCode,
+                            invoiceNo = targetVoucherID,
+                            date = currentDate,
+                            vendorCode = txtEntityCode.text.toString().trim(),
+                            partyName = txtPartyName.text.toString().trim(),
+                            categoryHead = (spnCategory.selectedItem?.toString() ?: "General"),
+                            accountGroup = (spnAccountGroup.selectedItem?.toString() ?: "EXPENSE"),
+                            customNarration = txtNarration.text.toString().trim(),
+                            paymentMode = (spnPaymentMode.selectedItem?.toString() ?: "Cash"),
+                            selectedBank = selectedBankLabel,
+                            linkedAccountNo = targetAccNo,
+                            baseAmount = baseAmount,
+                            fineAmount = fineVal,
+                            totalFinalAmount = totalAmount,
+                            operatorAccountIdentity = activeUsername,
+                            rejectionOrChangeReason = ""
+                        )
+                        SupabaseClientManager.postgrest.from("payments").insert(paymentDto)
+                    }
 
                     // Update Target Bank Balance for Bank Payment
                     if (!isCashPayment && targetAccNo != "N/A") {
@@ -1293,7 +1403,16 @@ class VoucherTransactionActivity : AppCompatActivity() {
         return this.equals(other, ignoreCase = true)
     }
 
-    data class RecentRecord(val date: String, val id: String, val entity: String, val name: String, val amount: String, val mode: VoucherMode)
+    data class RecentRecord(
+        val date: String,
+        val id: String,
+        val entity: String,
+        val name: String,
+        val categoryHead: String,
+        val amount: String,
+        val reasonNote: String?,
+        val mode: VoucherMode
+    )
 
     private fun showRecentTransactionsSheet() {
         val dialog = BottomSheetDialog(this)
@@ -1311,24 +1430,40 @@ class VoucherTransactionActivity : AppCompatActivity() {
 
         class RecentAdapter(private val list: List<RecentRecord>) : RecyclerView.Adapter<RecentAdapter.VH>() {
             inner class VH(v: View) : RecyclerView.ViewHolder(v) {
-                val txtTitle: TextView = v.findViewById(android.R.id.text1)
-                val txtSub: TextView = v.findViewById(android.R.id.text2)
+                val txtVoucherNo: TextView = v.findViewById(R.id.txtCardVoucherNo)
+                val txtDate: TextView = v.findViewById(R.id.txtCardDate)
+                val txtAmount: TextView = v.findViewById(R.id.txtCardAmount)
+                val txtPartyName: TextView = v.findViewById(R.id.txtCardPartyName)
+                val txtCategory: TextView = v.findViewById(R.id.txtCardCategory)
+                val lblNote: TextView = v.findViewById(R.id.lblModificationNote)
             }
+
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-                val v = LayoutInflater.from(parent.context).inflate(android.R.layout.simple_list_item_2, parent, false)
+                val v = LayoutInflater.from(parent.context).inflate(R.layout.item_recent_voucher_card, parent, false)
                 return VH(v)
             }
+
             override fun onBindViewHolder(holder: VH, position: Int) {
                 val item = list[position]
-                holder.txtTitle.text = "${item.id} - ${item.name} (${item.amount})"
-                holder.txtTitle.setTextColor(Color.parseColor("#1F2937"))
-                holder.txtSub.text = "Date: ${item.date} | Ref: ${item.entity}"
+                holder.txtVoucherNo.text = "#${item.id}"
+                holder.txtDate.text = item.date
+                holder.txtAmount.text = item.amount
+                holder.txtPartyName.text = "${item.name} (${item.entity})"
+                holder.txtCategory.text = item.categoryHead
+
+                if (!item.reasonNote.isNullOrBlank()) {
+                    holder.lblNote.visibility = View.VISIBLE
+                    holder.lblNote.text = "✏️ Note: ${item.reasonNote}"
+                } else {
+                    holder.lblNote.visibility = View.GONE
+                }
 
                 holder.itemView.setOnClickListener {
                     dialog.dismiss()
                     loadVoucherForEditing(item.id, item.mode)
                 }
             }
+
             override fun getItemCount() = list.size
         }
 
@@ -1344,7 +1479,7 @@ class VoucherTransactionActivity : AppCompatActivity() {
                             .decodeList<ReceiptDto>()
 
                         for (doc in list) {
-                            recordsList.add(RecentRecord(doc.date, doc.invoiceNo, doc.flatNo ?: "N/A", doc.partyName, "₹${doc.totalFinalAmount}", currentMode))
+                            recordsList.add(RecentRecord(doc.date, doc.invoiceNo, doc.flatNo ?: "N/A", doc.partyName, doc.categoryHead, String.format(Locale.getDefault(), "₹%,.2f", doc.totalFinalAmount), doc.rejectionOrChangeReason, currentMode))
                         }
                     }
                     VoucherMode.PAYMENT -> {
@@ -1353,7 +1488,7 @@ class VoucherTransactionActivity : AppCompatActivity() {
                             .decodeList<PaymentDto>()
 
                         for (doc in list) {
-                            recordsList.add(RecentRecord(doc.date, doc.invoiceNo, doc.vendorCode ?: "N/A", doc.partyName, "₹${doc.totalFinalAmount}", currentMode))
+                            recordsList.add(RecentRecord(doc.date, doc.invoiceNo, doc.vendorCode ?: "N/A", doc.partyName, doc.categoryHead, String.format(Locale.getDefault(), "₹%,.2f", doc.totalFinalAmount), doc.rejectionOrChangeReason, currentMode))
                         }
                     }
                     VoucherMode.CONTRA -> {
@@ -1362,11 +1497,13 @@ class VoucherTransactionActivity : AppCompatActivity() {
                             .decodeList<ContraEntryDto>()
 
                         for (doc in list) {
-                            recordsList.add(RecentRecord(doc.date, doc.voucherNo, doc.flatNo ?: "N/A", doc.partyName, "₹${doc.amount}", currentMode))
+                            recordsList.add(RecentRecord(doc.date, doc.voucherNo, doc.flatNo ?: "N/A", doc.partyName, "${doc.sourceAccount} -> ${doc.destinationAccount}", String.format(Locale.getDefault(), "₹%,.2f", doc.amount), doc.rejectionOrChangeReason, currentMode))
                         }
                     }
                 }
-                filteredList.addAll(recordsList)
+                recordsList.sortByDescending { it.date }
+                val displayFive = recordsList.take(5)
+                filteredList.addAll(displayFive)
                 adapter.notifyDataSetChanged()
             } catch (e: Exception) {
                 Toast.makeText(this@VoucherTransactionActivity, "Error loading recent records: ${e.message}", Toast.LENGTH_SHORT).show()

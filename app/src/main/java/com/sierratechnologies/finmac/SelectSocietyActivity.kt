@@ -171,6 +171,10 @@ class SelectSocietyActivity : AppCompatActivity() {
     }
 
     private fun handleRowSelectionEvent(code: String, name: String) {
+        AppCache.clearAllInMemoryCache()
+        Util.Session.activeBranchCode = code
+        Util.Session.activeBranchName = name
+
         val sharedPref = getSharedPreferences("UserSession", Context.MODE_PRIVATE)
         sharedPref.edit().apply {
             putString("SOCIETY_CODE", code)

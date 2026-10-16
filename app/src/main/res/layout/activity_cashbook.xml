@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -23,7 +24,7 @@
             android:elevation="4dp"
             android:paddingHorizontal="16dp"
             android:paddingTop="20dp"
-            android:paddingBottom="24dp">
+            android:paddingBottom="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -101,7 +102,7 @@
             </LinearLayout>
         </FrameLayout>
 
-        <!-- Shimmer Loading Overlay (Positioned strictly under Navy Header) -->
+        <!-- Shimmer Loading Overlay -->
         <FrameLayout
             android:id="@+id/loadingOverlay"
             android:layout_width="match_parent"
@@ -115,7 +116,7 @@
         </FrameLayout>
 
         <!-- ========================================== -->
-        <!-- 2. FINANCIAL METRICS DASHBOARD BANNER      -->
+        <!-- FINANCIAL METRICS DASHBOARD BANNER         -->
         <!-- ========================================== -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -278,7 +279,7 @@
         </LinearLayout>
 
         <!-- ========================================== -->
-        <!-- 3. SEARCH BAR CONTROL PANEL                -->
+        <!-- 2. SEARCH BAR & PERIOD SELECTOR            -->
         <!-- ========================================== -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
@@ -308,80 +309,564 @@
 
                 <EditText
                     android:id="@+id/txtSearchLedger"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="44dp"
+                    android:layout_weight="1"
                     android:background="@null"
-                    android:hint="Search voucher, party, or category head..."
+                    android:hint="Search voucher, member, vendor..."
                     android:inputType="text"
                     android:textColor="#1F2937"
                     android:textColorHint="#9CA3AF"
                     android:textSize="13sp" />
 
-                <Spinner
-                    android:id="@+id/spnPeriod"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
+                <FrameLayout
+                    android:layout_width="140dp"
+                    android:layout_height="36dp"
                     android:layout_marginStart="8dp"
-                    android:background="@android:drawable/btn_dropdown"
-                    android:backgroundTint="#052550" />
+                    android:background="@drawable/bg_spinner_outlined">
+
+                    <Spinner
+                        android:id="@+id/spnPeriod"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:paddingHorizontal="4dp" />
+                </FrameLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ========================================== -->
-        <!-- 4. SIDE SWITCHER TABBED TOGGLE DECK        -->
-        <!-- ========================================== -->
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/toggleSideGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="10dp"
-            app:checkedButton="@id/btnSideReceipts"
-            app:selectionRequired="true"
-            app:singleSelection="true">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSideReceipts"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
-                android:text="RECEIPTS"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:backgroundTint="@color/selector_toggle_button_bg"
-                android:textColor="@color/selector_toggle_button_text"
-                app:strokeColor="#052550"
-                app:strokeWidth="1dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSidePayments"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
-                android:text="PAYMENTS"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:backgroundTint="@color/selector_toggle_button_bg"
-                android:textColor="@color/selector_toggle_button_text"
-                app:strokeColor="#052550"
-                app:strokeWidth="1dp" />
-
-        </com.google.android.material.button.MaterialButtonToggleGroup>
-
-        <!-- ========================================== -->
-        <!-- 5. RECYCLERVIEW STATEMENT LIST             -->
-        <!-- ========================================== -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvCashbookLedger"
+        <!-- Main Scrollable Content Area -->
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="10dp"
             android:layout_weight="1"
             android:clipToPadding="false"
-            android:paddingHorizontal="16dp"
-            android:paddingBottom="16dp" />
+            android:paddingBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="14dp"
+                android:paddingTop="12dp">
+
+                <!-- ========================================== -->
+                <!-- SECTION 1: RECEIPTS (CREDITS) CARD         -->
+                <!-- ========================================== -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardReceiptsSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="#A7F3D0"
+                    app:strokeWidth="1.5dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Receipts Header Bar -->
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#F0FDF4"
+                            android:paddingHorizontal="16dp"
+                            android:paddingVertical="12dp">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/badgeReceiptArrow"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:layout_centerVertical="true"
+                                app:cardBackgroundColor="#059669"
+                                app:cardCornerRadius="18dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="0dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="↓"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="18sp"
+                                    android:textStyle="bold" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerVertical="true"
+                                android:layout_marginStart="12dp"
+                                android:layout_toEndOf="@id/badgeReceiptArrow"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/lblReceiptsTitle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Receipts (Credits)"
+                                    android:textColor="#065F46"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/lblReceiptsCount"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0 transactions"
+                                    android:textColor="#6B7280"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/lblReceiptsPillTotal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
+                                android:background="#D1FAE5"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="6dp"
+                                android:text="₹ 0.00"
+                                android:textColor="#065F46"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+                        </RelativeLayout>
+
+                        <!-- Quick Filter Chips Row for Receipts -->
+                        <HorizontalScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clipToPadding="false"
+                            android:paddingHorizontal="12dp"
+                            android:paddingTop="10dp"
+                            android:scrollbars="none">
+
+                            <com.google.android.material.chip.ChipGroup
+                                android:id="@+id/chipGroupReceipts"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:singleSelection="true">
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipReceiptsAll"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="true"
+                                    android:text="All"
+                                    app:chipBackgroundColor="#059669"
+                                    android:textColor="#FFFFFF" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipReceiptsFlat"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Flat No" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipReceiptsAccount"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Account Holder" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipReceiptsCash"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Cash Cr" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipReceiptsBank"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Bank Cr" />
+                            </com.google.android.material.chip.ChipGroup>
+                        </HorizontalScrollView>
+
+                        <!-- Structured Table Header for Receipts -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:background="#F8FAFC"
+                            android:orientation="horizontal"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="8dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.2"
+                                android:text="Date"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.1"
+                                android:text="Receipt No"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Flat No"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.8"
+                                android:text="Member Name"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.8"
+                                android:text="Account Head"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.3"
+                                android:gravity="end"
+                                android:text="Cash Cr"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.3"
+                                android:gravity="end"
+                                android:text="Bank Cr"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <Space
+                                android:layout_width="18dp"
+                                android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <!-- Receipts Table RecyclerView -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvReceiptsTable"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"
+                            tools:listitem="@layout/item_cashbook_receipt_row" />
+
+                        <!-- Footer Pill Button for Receipts -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnViewAllReceipts"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:layout_marginVertical="12dp"
+                            android:paddingHorizontal="20dp"
+                            android:text="View All Receipts (0) >"
+                            android:textColor="#059669"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="19dp"
+                            app:strokeColor="#059669"
+                            app:strokeWidth="1dp" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ========================================== -->
+                <!-- SECTION 2: PAYMENTS (DEBITS) CARD          -->
+                <!-- ========================================== -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardPaymentsSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="#FCA5A5"
+                    app:strokeWidth="1.5dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Payments Header Bar -->
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#FEF2F2"
+                            android:paddingHorizontal="16dp"
+                            android:paddingVertical="12dp">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/badgePaymentArrow"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:layout_centerVertical="true"
+                                app:cardBackgroundColor="#DC2626"
+                                app:cardCornerRadius="18dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="0dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="↑"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="18sp"
+                                    android:textStyle="bold" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerVertical="true"
+                                android:layout_marginStart="12dp"
+                                android:layout_toEndOf="@id/badgePaymentArrow"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/lblPaymentsTitle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Payments (Debits)"
+                                    android:textColor="#991B1B"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/lblPaymentsCount"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0 transactions"
+                                    android:textColor="#6B7280"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/lblPaymentsPillTotal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
+                                android:background="#FEE2E2"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="6dp"
+                                android:text="₹ 0.00"
+                                android:textColor="#991B1B"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+                        </RelativeLayout>
+
+                        <!-- Quick Filter Chips Row for Payments -->
+                        <HorizontalScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clipToPadding="false"
+                            android:paddingHorizontal="12dp"
+                            android:paddingTop="10dp"
+                            android:scrollbars="none">
+
+                            <com.google.android.material.chip.ChipGroup
+                                android:id="@+id/chipGroupPayments"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:singleSelection="true">
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipPaymentsAll"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="true"
+                                    android:text="All"
+                                    app:chipBackgroundColor="#DC2626"
+                                    android:textColor="#FFFFFF" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipPaymentsNo"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Payment No" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipPaymentsVendor"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Vendor Code" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipPaymentsName"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Name of Vendor" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipPaymentsAccount"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Account Holder" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipPaymentsCash"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Cash Db" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipPaymentsBank"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Bank Db" />
+                            </com.google.android.material.chip.ChipGroup>
+                        </HorizontalScrollView>
+
+                        <!-- Structured Table Header for Payments -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:background="#F8FAFC"
+                            android:orientation="horizontal"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="8dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.2"
+                                android:text="Date"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.1"
+                                android:text="Payment No"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Vendor Code"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.8"
+                                android:text="Name of Vendor"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.8"
+                                android:text="Account Head"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.3"
+                                android:gravity="end"
+                                android:text="Cash Db"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.3"
+                                android:gravity="end"
+                                android:text="Bank Db"
+                                android:textColor="#64748B"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <Space
+                                android:layout_width="18dp"
+                                android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <!-- Payments Table RecyclerView -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvPaymentsTable"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"
+                            tools:listitem="@layout/item_cashbook_payment_row" />
+
+                        <!-- Footer Pill Button for Payments -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnViewAllPayments"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:layout_marginVertical="12dp"
+                            android:paddingHorizontal="20dp"
+                            android:text="View All Payments (0) >"
+                            android:textColor="#DC2626"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="19dp"
+                            app:strokeColor="#DC2626"
+                            app:strokeWidth="1dp" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
 
     </LinearLayout>
 

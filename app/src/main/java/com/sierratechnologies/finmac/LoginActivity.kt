@@ -212,6 +212,7 @@ class LoginActivity : AppCompatActivity() {
         branchCode: String, branchName: String, branchAddress: String,
         branchCity: String, activeUser: String, fiscalYear: String
     ) {
+        AppCache.clearAllInMemoryCache()
         Util.Session.isSuperAdmin = false
         Util.Session.activeBranchCode = branchCode
         Util.Session.activeBranchName = branchName

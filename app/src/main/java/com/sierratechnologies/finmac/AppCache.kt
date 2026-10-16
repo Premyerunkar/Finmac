@@ -24,6 +24,18 @@ object AppCache {
     val contraMap = mutableMapOf<String, List<ContraEntryDto>>()
     val categoriesMap = mutableMapOf<String, List<AccountCategoryDto>>()
 
+    // Purge in-memory cache on session or branch switch
+    fun clearAllInMemoryCache() {
+        branches = null
+        membersMap.clear()
+        vendorsMap.clear()
+        bankAccountsMap.clear()
+        receiptsMap.clear()
+        paymentsMap.clear()
+        contraMap.clear()
+        categoriesMap.clear()
+    }
+
     // Generic disk storage helpers
     fun saveToDisk(context: Context, key: String, dataJson: String) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
