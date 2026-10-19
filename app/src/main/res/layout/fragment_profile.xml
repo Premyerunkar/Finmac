@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="24dp">
+        android:paddingBottom="96dp">
 
         <!-- Top Header Profile Banner -->
         <FrameLayout
@@ -87,6 +87,20 @@
                         android:textColor="#CBD5E1"
                         android:textSize="11sp" />
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/lblSuperAdminBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:background="#FEF3C7"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:text="👑 SUPERADMIN"
+                    android:textColor="#92400E"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
             </LinearLayout>
         </FrameLayout>
 
@@ -437,7 +451,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginVertical="12dp"
-                        background="#F1F5F9" />
+                        android:background="#F1F5F9" />
 
                     <LinearLayout
                         android:layout_width="match_parent"

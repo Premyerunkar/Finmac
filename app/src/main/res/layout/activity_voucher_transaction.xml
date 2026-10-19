@@ -298,7 +298,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
                             android:letterSpacing="0.05"
-                            android:text="2. ACCOUNT LEDGER &amp; CLEARING VECTOR"
+                            android:text="2. ACCOUNT &amp; TRANSFER DETAILS"
                             android:textColor="#475569"
                             android:textSize="11sp"
                             android:textStyle="bold" />
@@ -360,35 +360,87 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Receipt (Credit) - Account Head (Optional)"
+                                android:text="Account Head Category *"
                                 android:textColor="#1F2937"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
 
                             <Spinner
-                                android:id="@+id/spnSourceAccount"
+                                android:id="@+id/spnContraCategoryHead"
                                 android:layout_width="match_parent"
                                 android:layout_height="48dp"
                                 android:layout_marginTop="4dp"
                                 android:background="@drawable/bg_spinner_outlined"
                                 android:paddingEnd="12dp" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <!-- Container 1: Internal Vault Transfer (From -> To) -->
+                            <LinearLayout
+                                android:id="@+id/groupVaultTransfer"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="12dp"
-                                android:text="Payment (Debit) - Account Head (Optional)"
-                                android:textColor="#1F2937"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
+                                android:orientation="vertical">
 
-                            <Spinner
-                                android:id="@+id/spnDestinationAccount"
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="From (Source Vault - Outflow) *"
+                                    android:textColor="#DC2626"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+
+                                <Spinner
+                                    android:id="@+id/spnContraSource"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="48dp"
+                                    android:layout_marginTop="4dp"
+                                    android:background="@drawable/bg_spinner_outlined"
+                                    android:paddingEnd="12dp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="12dp"
+                                    android:text="To (Destination Vault - Inflow) *"
+                                    android:textColor="#16A34A"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+
+                                <Spinner
+                                    android:id="@+id/spnContraDest"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="48dp"
+                                    android:layout_marginTop="4dp"
+                                    android:background="@drawable/bg_spinner_outlined"
+                                    android:paddingEnd="12dp" />
+                            </LinearLayout>
+
+                            <!-- Container 2: Single Vault Account (For Direct Income / Expense Head Entry) -->
+                            <LinearLayout
+                                android:id="@+id/groupSingleVaultAccount"
                                 android:layout_width="match_parent"
-                                android:layout_height="48dp"
-                                android:layout_marginTop="4dp"
-                                android:background="@drawable/bg_spinner_outlined"
-                                android:paddingEnd="12dp" />
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <TextView
+                                    android:id="@+id/lblSingleVaultLabel"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Target Cash / Bank Vault Account *"
+                                    android:textColor="#052550"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+
+                                <Spinner
+                                    android:id="@+id/spnSingleVaultAccount"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="48dp"
+                                    android:layout_marginTop="4dp"
+                                    android:background="@drawable/bg_spinner_outlined"
+                                    android:paddingEnd="12dp" />
+                            </LinearLayout>
                         </LinearLayout>
 
                         <LinearLayout
@@ -501,86 +553,93 @@
                                 android:textColor="#0F172A" />
                         </com.google.android.material.textfield.TextInputLayout>
 
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tilFine"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        <LinearLayout
+                            android:id="@+id/containerFineAndDue"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:hint="Applied Fine Amount (₹)"
-                            android:textColorHint="#64748B">
+                            android:orientation="vertical">
 
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/txtFine"
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilFine"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:inputType="numberDecimal"
-                                android:text="0.00"
-                                android:textColor="#0F172A" />
-                        </com.google.android.material.textfield.TextInputLayout>
+                                android:layout_marginTop="12dp"
+                                android:hint="Applied Fine Amount (₹)"
+                                android:textColorHint="#64748B">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Fine Assessment:"
-                                android:textColor="#6B7280"
-                                android:textSize="13sp" />
-
-                            <TextView
-                                android:id="@+id/lblFineVal"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="+₹0.00"
-                                android:textColor="#1F2937"
-                                android:textSize="13sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
-                        <!-- Highlighted Balance Due Badge Container -->
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="14dp"
-                            app:cardBackgroundColor="#F0F9FF"
-                            app:cardCornerRadius="10dp"
-                            app:cardElevation="0dp"
-                            app:strokeColor="#BAE6FD"
-                            app:strokeWidth="1dp">
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/txtFine"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="numberDecimal"
+                                    android:text="0.00"
+                                    android:textColor="#0F172A" />
+                            </com.google.android.material.textfield.TextInputLayout>
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingHorizontal="14dp"
-                                android:paddingVertical="12dp">
+                                android:layout_marginTop="12dp"
+                                android:orientation="horizontal">
 
                                 <TextView
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:text="Total Balance Due:"
-                                    android:textColor="#0369A1"
-                                    android:textSize="14sp"
-                                    android:textStyle="bold" />
+                                    android:text="Fine Assessment:"
+                                    android:textColor="#6B7280"
+                                    android:textSize="13sp" />
 
                                 <TextView
-                                    android:id="@+id/lblTotalVal"
+                                    android:id="@+id/lblFineVal"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="₹0.00"
-                                    android:textColor="#0284C7"
-                                    android:textSize="18sp"
+                                    android:text="+₹0.00"
+                                    android:textColor="#1F2937"
+                                    android:textSize="13sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Highlighted Balance Due Badge Container -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                app:cardBackgroundColor="#F0F9FF"
+                                app:cardCornerRadius="10dp"
+                                app:cardElevation="0dp"
+                                app:strokeColor="#BAE6FD"
+                                app:strokeWidth="1dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingHorizontal="14dp"
+                                    android:paddingVertical="12dp">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="Total Balance Due:"
+                                        android:textColor="#0369A1"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/lblTotalVal"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="₹0.00"
+                                        android:textColor="#0284C7"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+                        </LinearLayout>
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>

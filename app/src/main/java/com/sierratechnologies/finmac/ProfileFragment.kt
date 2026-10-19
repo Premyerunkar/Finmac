@@ -30,6 +30,7 @@ class ProfileFragment : Fragment() {
     private lateinit var lblProfileAddress: TextView
     private lateinit var lblAvatarInitial: TextView
     private lateinit var lblWorkingPeriodMetric: TextView
+    private lateinit var lblSuperAdminBadge: TextView
 
     private lateinit var menuSocietyOverview: LinearLayout
     private lateinit var menuAdminManagement: LinearLayout
@@ -53,6 +54,7 @@ class ProfileFragment : Fragment() {
         lblProfileAddress = v.findViewById(R.id.lblProfileAddress)
         lblAvatarInitial = v.findViewById(R.id.lblAvatarInitial)
         lblWorkingPeriodMetric = v.findViewById(R.id.lblWorkingPeriodMetric)
+        lblSuperAdminBadge = v.findViewById(R.id.lblSuperAdminBadge)
 
         menuSocietyOverview = v.findViewById(R.id.menuSocietyOverview)
         menuAdminManagement = v.findViewById(R.id.menuAdminManagement)
@@ -138,6 +140,12 @@ class ProfileFragment : Fragment() {
         lblProfileRegNo.text = "Reg No: $regNo"
         lblProfileAddress.text = if (savedCity.isNotBlank() && !address.contains(savedCity)) "$address, $savedCity" else address
         lblWorkingPeriodMetric.text = period
+
+        if (Util.Session.isSuperAdmin || targetBranchCode.equals("SUPERADMIN", ignoreCase = true)) {
+            lblSuperAdminBadge.visibility = View.VISIBLE
+        } else {
+            lblSuperAdminBadge.visibility = View.GONE
+        }
 
         if (sName.isNotBlank()) {
             lblAvatarInitial.text = sName.trim().take(1).uppercase(Locale.getDefault())

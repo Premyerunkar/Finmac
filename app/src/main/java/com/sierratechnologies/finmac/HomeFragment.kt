@@ -87,7 +87,8 @@ class HomeFragment : Fragment() {
             val cachedBranches = AppCache.getBranches(ctx)
             val cachedBranch = cachedBranches?.find { it.code.equalsIgnoreCase(branchCode) }
             if (cachedBranch != null) {
-                txtSocietyName.text = cachedBranch.name.ifBlank { savedName.ifBlank { "Society Dashboard" } }
+                val baseName = cachedBranch.name.ifBlank { savedName.ifBlank { "Society Dashboard" } }
+                txtSocietyName.text = if (Util.Session.isSuperAdmin || branchCode.equalsIgnoreCase("SUPERADMIN")) "$baseName 👑 SUPERADMIN" else baseName
                 val fullAddress = buildString {
                     if (!cachedBranch.address.isNullOrBlank()) append(cachedBranch.address)
                     if (!cachedBranch.city.isNullOrBlank()) {
@@ -114,7 +115,8 @@ class HomeFragment : Fragment() {
                         val address = branch.address ?: ""
                         val city = branch.city ?: ""
 
-                        txtSocietyName.text = societyName.ifBlank { savedName.ifBlank { "Society Dashboard" } }
+                        val baseName = societyName.ifBlank { savedName.ifBlank { "Society Dashboard" } }
+                        txtSocietyName.text = if (Util.Session.isSuperAdmin || branchCode.equalsIgnoreCase("SUPERADMIN")) "$baseName 👑 SUPERADMIN" else baseName
 
                         val fullAddress = buildString {
                             if (address.isNotBlank()) append(address)
@@ -128,7 +130,7 @@ class HomeFragment : Fragment() {
                 } catch (_: Exception) {}
             }
         } else {
-            txtSocietyName.text = "Finmac Society"
+            txtSocietyName.text = if (Util.Session.isSuperAdmin) "Finmac Society 👑 SUPERADMIN" else "Finmac Society"
             txtSocietyDetails.text = "Welcome"
         }
     }

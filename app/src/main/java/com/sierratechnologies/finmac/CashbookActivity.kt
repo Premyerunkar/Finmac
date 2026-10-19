@@ -64,6 +64,11 @@ class CashbookActivity : AppCompatActivity() {
     private lateinit var lblTotalPayments: TextView
     private lateinit var lblClosingBal: TextView
 
+    // Vault Liquidity UI pointers
+    private lateinit var lblExactCashRemaining: TextView
+    private lateinit var lblTotalBankBalance: TextView
+    private lateinit var lblNetVaultTotal: TextView
+
     private lateinit var txtSearchLedger: EditText
     private lateinit var spnPeriod: Spinner
     private lateinit var loadingOverlay: FrameLayout
@@ -169,6 +174,10 @@ class CashbookActivity : AppCompatActivity() {
         lblTotalReceipts = findViewById(R.id.lblTotalReceipts)
         lblTotalPayments = findViewById(R.id.lblTotalPayments)
         lblClosingBal = findViewById(R.id.lblClosingBal)
+
+        lblExactCashRemaining = findViewById(R.id.lblExactCashRemaining)
+        lblTotalBankBalance = findViewById(R.id.lblTotalBankBalance)
+        lblNetVaultTotal = findViewById(R.id.lblNetVaultTotal)
 
         txtSearchLedger = findViewById(R.id.txtSearchLedger)
         spnPeriod = findViewById(R.id.spnPeriod)
@@ -278,6 +287,90 @@ class CashbookActivity : AppCompatActivity() {
             tempPaymentsList.add(LedgerEntry(d, inv, vendorCode, party, cat, cashAmt, bankAmt, totalAmt, mode, opUser, narration, false))
         }
 
+        // Convert Contra entries into Receipt and Payment ledger items
+        for (doc in cList) {
+            val d = doc.date
+            val inv = doc.voucherNo
+            val flatNo = doc.flatNo ?: "CONTRA"
+            val srcVault = doc.sourceAccount
+            val destVault = doc.destinationAccount
+            val opUser = doc.operatorIdentity ?: "Admin"
+            val narration = doc.narration ?: ""
+            val totalAmt = doc.amount
+
+            val isIncomeContra = flatNo.equals("CONTRA-INCOME", ignoreCase = true) ||
+                    listOf("bank intrest", "interest", "bonus", "deposits", "maturity", "entry fee", "collection", "income").any { kw -> srcVault.lowercase().contains(kw) }
+
+            val isExpenseContra = flatNo.equals("CONTRA-EXPENSE", ignoreCase = true) ||
+                    listOf("bank charges", "charges", "fees", "audit", "expenses", "salary", "expense").any { kw -> destVault.lowercase().contains(kw) }
+
+            if (isIncomeContra) {
+                // Receipts-Only Inflow
+                val isCash = destVault.contains("Cash", ignoreCase = true)
+                tempReceiptsList.add(
+                    LedgerEntry(
+                        date = d, voucherNo = inv, entityCode = "INCOME-CONTRA",
+                        partyName = doc.partyName.ifBlank { "Inflow into $destVault" },
+                        categoryHead = srcVault.ifBlank { "Bank Interest" },
+                        cashAmount = if (isCash) totalAmt else 0.0,
+                        bankAmount = if (!isCash) totalAmt else 0.0,
+                        totalAmount = totalAmt,
+                        mode = if (isCash) "Cash" else "Bank Transfer",
+                        operatorIdentity = opUser, customNarration = narration, isReceipt = true
+                    )
+                )
+            } else if (isExpenseContra) {
+                // Payments-Only Outflow
+                val isCash = srcVault.contains("Cash", ignoreCase = true)
+                tempPaymentsList.add(
+                    LedgerEntry(
+                        date = d, voucherNo = inv, entityCode = "EXPENSE-CONTRA",
+                        partyName = doc.partyName.ifBlank { "Outflow from $srcVault" },
+                        categoryHead = destVault.ifBlank { "Bank Charges" },
+                        cashAmount = if (isCash) totalAmt else 0.0,
+                        bankAmount = if (!isCash) totalAmt else 0.0,
+                        totalAmount = totalAmt,
+                        mode = if (isCash) "Cash" else "Bank Transfer",
+                        operatorIdentity = opUser, customNarration = narration, isReceipt = false
+                    )
+                )
+            } else {
+                // Dual-Sided Internal Vault Transfer
+                val isCashSrc = srcVault.contains("Cash", ignoreCase = true)
+                val isCashDest = destVault.contains("Cash", ignoreCase = true)
+
+                if (destVault.isNotBlank() && !destVault.startsWith("--")) {
+                    tempReceiptsList.add(
+                        LedgerEntry(
+                            date = d, voucherNo = inv, entityCode = flatNo,
+                            partyName = "Received from $srcVault",
+                            categoryHead = "Vault Transfer Inflow",
+                            cashAmount = if (isCashDest) totalAmt else 0.0,
+                            bankAmount = if (!isCashDest) totalAmt else 0.0,
+                            totalAmount = totalAmt,
+                            mode = if (isCashDest) "Cash" else "Bank Transfer",
+                            operatorIdentity = opUser, customNarration = narration, isReceipt = true
+                        )
+                    )
+                }
+
+                if (srcVault.isNotBlank() && !srcVault.startsWith("--")) {
+                    tempPaymentsList.add(
+                        LedgerEntry(
+                            date = d, voucherNo = inv, entityCode = flatNo,
+                            partyName = "Transferred to $destVault",
+                            categoryHead = "Vault Transfer Outflow",
+                            cashAmount = if (isCashSrc) totalAmt else 0.0,
+                            bankAmount = if (!isCashSrc) totalAmt else 0.0,
+                            totalAmount = totalAmt,
+                            mode = if (isCashSrc) "Cash" else "Bank Transfer",
+                            operatorIdentity = opUser, customNarration = narration, isReceipt = false
+                        )
+                    )
+                }
+            }
+        }
+
         allReceipts.clear()
         allReceipts.addAll(tempReceiptsList)
 
@@ -286,8 +379,6 @@ class CashbookActivity : AppCompatActivity() {
 
         totalReceiptsSum = tempReceiptsList.sumOf { it.totalAmount }
         totalPaymentsSum = tempPaymentsList.sumOf { it.totalAmount }
-
-        val masterTimeline = (tempReceiptsList + tempPaymentsList).sortedWith(compareBy({ it.date }, { it.voucherNo }))
 
         if (baseCashOpeningInput > 0) {
             dynamicOpeningBalance = baseCashOpeningInput
@@ -307,10 +398,23 @@ class CashbookActivity : AppCompatActivity() {
             totalReceiptsSum - totalPaymentsSum
         }
 
-        lblOpeningBal.text = String.format("₹%,.2f", dynamicOpeningBalance)
-        lblTotalReceipts.text = String.format("₹%,.2f", totalReceiptsSum)
-        lblTotalPayments.text = String.format("₹%,.2f", totalPaymentsSum)
-        lblClosingBal.text = String.format("₹%,.2f", closingBal)
+        lblOpeningBal.text = String.format(Locale.getDefault(), "₹%,.2f", dynamicOpeningBalance)
+        lblTotalReceipts.text = String.format(Locale.getDefault(), "₹%,.2f", totalReceiptsSum)
+        lblTotalPayments.text = String.format(Locale.getDefault(), "₹%,.2f", totalPaymentsSum)
+        lblClosingBal.text = String.format(Locale.getDefault(), "₹%,.2f", closingBal)
+
+        // Compute Live Cash Remaining & Total Bank Reserves
+        var liveCashRemaining = baseCashOpeningInput
+        for (r in tempReceiptsList) liveCashRemaining += r.cashAmount
+        for (p in tempPaymentsList) liveCashRemaining -= p.cashAmount
+
+        val cachedBankAccounts = AppCache.getBankAccounts(this, activeBranchCode) ?: emptyList()
+        val totalBankReserve = cachedBankAccounts.sumOf { it.currentBalance }
+        val netVaultTotal = liveCashRemaining + totalBankReserve
+
+        lblExactCashRemaining.text = String.format(Locale.getDefault(), "₹ %,.2f", liveCashRemaining)
+        lblTotalBankBalance.text = String.format(Locale.getDefault(), "₹ %,.2f", totalBankReserve)
+        lblNetVaultTotal.text = String.format(Locale.getDefault(), "Net: ₹ %,.2f", netVaultTotal)
 
         filterAndRenderDisplayList(txtSearchLedger.text.toString().trim())
     }
@@ -364,19 +468,22 @@ class CashbookActivity : AppCompatActivity() {
                     .select { filter { eq("branch_code", activeBranchCode) } }
                     .decodeList<ReceiptDto>()
 
-                AppCache.saveReceipts(this@CashbookActivity, activeBranchCode, rList)
-
                 val pList = SupabaseClientManager.postgrest.from("payments")
                     .select { filter { eq("branch_code", activeBranchCode) } }
                     .decodeList<PaymentDto>()
-
-                AppCache.savePayments(this@CashbookActivity, activeBranchCode, pList)
 
                 val cList = SupabaseClientManager.postgrest.from("contra_entries")
                     .select { filter { eq("branch_code", activeBranchCode) } }
                     .decodeList<ContraEntryDto>()
 
+                val bList = SupabaseClientManager.postgrest.from("bank_accounts")
+                    .select { filter { eq("branch_code", activeBranchCode) } }
+                    .decodeList<BankAccountDto>()
+
+                AppCache.saveReceipts(this@CashbookActivity, activeBranchCode, rList)
+                AppCache.savePayments(this@CashbookActivity, activeBranchCode, pList)
                 AppCache.saveContra(this@CashbookActivity, activeBranchCode, cList)
+                AppCache.saveBankAccounts(this@CashbookActivity, activeBranchCode, bList)
 
                 processAndRenderCashbook(baseCashOpening, rList, pList, cList, periodThresholdDateStr)
             } catch (e: Exception) {

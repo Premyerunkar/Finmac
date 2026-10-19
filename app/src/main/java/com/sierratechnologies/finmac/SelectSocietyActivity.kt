@@ -329,10 +329,17 @@ class SelectSocietyActivity : AppCompatActivity() {
                         )
                     )
                 }
-                rvBin.adapter = BinAdapter(binList) { branch, isRestore ->
-                    dialog.dismiss()
-                    if (isRestore) restoreBranch(branch) else permanentDelete(branch)
-                }
+                rvBin.adapter = BinAdapter(
+                    list = binList,
+                    onRestore = { branch ->
+                        dialog.dismiss()
+                        restoreBranch(branch)
+                    },
+                    onDelete = { branch ->
+                        dialog.dismiss()
+                        permanentDelete(branch)
+                    }
+                )
             } catch (e: Exception) {
                 Toast.makeText(this@SelectSocietyActivity, "Error loading bin: ${e.message}", Toast.LENGTH_SHORT).show()
             }
@@ -418,22 +425,33 @@ class SelectSocietyActivity : AppCompatActivity() {
         override fun getItemCount() = list.size
     }
 
-    inner class BinAdapter(private val list: List<Branch>, private val callback: (Branch, Boolean) -> Unit) :
-        RecyclerView.Adapter<BinAdapter.VH>() {
+    inner class BinAdapter(
+        private val list: List<Branch>,
+        private val onRestore: (Branch) -> Unit,
+        private val onDelete: (Branch) -> Unit
+    ) : RecyclerView.Adapter<BinAdapter.VH>() {
 
         inner class VH(v: View) : RecyclerView.ViewHolder(v) {
-            val name: TextView = v.findViewById(android.R.id.text1)
+            val name: TextView = v.findViewById(R.id.txtBinBranchName)
+            val info: TextView = v.findViewById(R.id.txtBinBranchInfo)
+            val code: TextView = v.findViewById(R.id.txtBinBranchCode)
+            val btnRestore: MaterialButton = v.findViewById(R.id.btnRestoreBinBranch)
+            val btnDelete: MaterialButton = v.findViewById(R.id.btnPermanentDeleteBinBranch)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-            val v = LayoutInflater.from(parent.context).inflate(android.R.layout.simple_list_item_2, parent, false)
+            val v = LayoutInflater.from(parent.context).inflate(R.layout.item_bin_branch_row, parent, false)
             return VH(v)
         }
 
         override fun onBindViewHolder(holder: VH, position: Int) {
             val item = list[position]
-            holder.name.text = "${item.name} (${item.code})"
-            holder.itemView.setOnClickListener { callback(item, true) }
+            holder.name.text = "🏢 ${item.name}"
+            holder.info.text = "${item.division} • ${item.city}, ${item.address}"
+            holder.code.text = item.code
+
+            holder.btnRestore.setOnClickListener { onRestore(item) }
+            holder.btnDelete.setOnClickListener { onDelete(item) }
         }
 
         override fun getItemCount() = list.size
