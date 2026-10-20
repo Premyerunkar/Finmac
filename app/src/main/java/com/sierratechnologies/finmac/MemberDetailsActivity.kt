@@ -275,8 +275,7 @@ class MemberDetailsActivity : AppCompatActivity() {
         val bAddr = cachedBranch?.address?.ifBlank { null } ?: savedAddress.ifBlank { "N/A" }
 
         if (bName.isNotBlank()) {
-            val titleStr = bName.uppercase(Locale.getDefault())
-            txtHeaderTitle.text = if (Util.Session.isSuperAdmin || targetBranchCode.equals("SUPERADMIN", ignoreCase = true)) "$titleStr 👑 SUPERADMIN" else titleStr
+            txtHeaderTitle.text = bName.uppercase(Locale.getDefault())
             txtHeaderSubtitle.text = "Address: $bAddr"
         }
 
@@ -299,8 +298,7 @@ class MemberDetailsActivity : AppCompatActivity() {
 
                 if (branches.isNotEmpty()) {
                     val branch = branches.first()
-                    val titleStr = branch.name.uppercase(Locale.getDefault())
-                    txtHeaderTitle.text = if (Util.Session.isSuperAdmin || targetBranchCode.equals("SUPERADMIN", ignoreCase = true)) "$titleStr 👑 SUPERADMIN" else titleStr
+                    txtHeaderTitle.text = branch.name.uppercase(Locale.getDefault())
                     txtHeaderSubtitle.text = "Address: ${branch.address ?: "N/A"}"
                 }
 

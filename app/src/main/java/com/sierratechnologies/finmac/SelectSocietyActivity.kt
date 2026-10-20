@@ -64,8 +64,8 @@ class SelectSocietyActivity : AppCompatActivity() {
         setupWindowInsets()
         setupRecyclerView()
 
-        findViewById<ImageButton>(R.id.btnAddBranch).setOnClickListener { showAddOrEditBranchDialog(null) }
-        findViewById<ImageButton>(R.id.btnBin).setOnClickListener { openRecycleBinDialog() }
+        findViewById<View>(R.id.btnAddBranch)?.setOnClickListener { showAddOrEditBranchDialog(null) }
+        findViewById<View>(R.id.btnBin)?.setOnClickListener { openRecycleBinDialog() }
 
         searchField.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

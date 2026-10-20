@@ -1137,21 +1137,58 @@ class VoucherTransactionActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun commitValidatedVoucherPayload(reasonNote: String) {
-        val isEditing = loadedVoucherNo != null
-        val year = SimpleDateFormat("yy", Locale.getDefault()).format(Date())
-        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-        val prefix = when (currentMode) {
+    private suspend fun generateUniqueVoucherNumber(mode: VoucherMode): String {
+        val prefix = when (mode) {
             VoucherMode.RECEIPT -> "R"
             VoucherMode.PAYMENT -> "P"
             VoucherMode.CONTRA -> "C"
         }
-        val targetVoucherID = loadedVoucherNo ?: String.format("%s%s-%04d", prefix, year, nextInvoiceSerial)
+        val year = SimpleDateFormat("yy", Locale.getDefault()).format(Date())
+
+        val existingNumbers = when (mode) {
+            VoucherMode.RECEIPT -> try {
+                SupabaseClientManager.postgrest.from("receipts")
+                    .select { filter { eq("branch_code", activeBranchCode) } }
+                    .decodeList<ReceiptDto>()
+                    .map { it.invoiceNo.uppercase(Locale.getDefault()) }
+                    .toSet()
+            } catch (_: Exception) { emptySet() }
+            VoucherMode.PAYMENT -> try {
+                SupabaseClientManager.postgrest.from("payments")
+                    .select { filter { eq("branch_code", activeBranchCode) } }
+                    .decodeList<PaymentDto>()
+                    .map { it.invoiceNo.uppercase(Locale.getDefault()) }
+                    .toSet()
+            } catch (_: Exception) { emptySet() }
+            VoucherMode.CONTRA -> try {
+                SupabaseClientManager.postgrest.from("contra_entries")
+                    .select { filter { eq("branch_code", activeBranchCode) } }
+                    .decodeList<ContraEntryDto>()
+                    .map { it.voucherNo.uppercase(Locale.getDefault()) }
+                    .toSet()
+            } catch (_: Exception) { emptySet() }
+        }
+
+        var serial = (existingNumbers.size + 1).toLong()
+        var candidate = String.format("%s%s-%04d", prefix, year, serial)
+
+        while (existingNumbers.contains(candidate.uppercase(Locale.getDefault()))) {
+            serial++
+            candidate = String.format("%s%s-%04d", prefix, year, serial)
+        }
+
+        return candidate
+    }
+
+    private fun commitValidatedVoucherPayload(reasonNote: String) {
+        val isEditing = loadedVoucherNo != null
+        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
         loadingOverlay.visibility = View.VISIBLE
 
         lifecycleScope.launch {
             try {
+                val targetVoucherID = loadedVoucherNo ?: generateUniqueVoucherNumber(currentMode)
                 val bankAccountsList = AppCache.getBankAccounts(this@VoucherTransactionActivity, activeBranchCode)
                     ?: try {
                         val fetched = SupabaseClientManager.postgrest.from("bank_accounts")

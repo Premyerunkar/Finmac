@@ -83,12 +83,18 @@ class HomeFragment : Fragment() {
         val savedAddress = sharedPref.getString("SOCIETY_ADDRESS", "") ?: ""
         val savedCity = sharedPref.getString("SOCIETY_CITY", "") ?: ""
 
+        val cardSuperAdminFloatingBadge = view?.findViewById<View>(R.id.cardSuperAdminFloatingBadge)
+        if (Util.Session.isSuperAdmin || branchCode.equalsIgnoreCase("SUPERADMIN")) {
+            cardSuperAdminFloatingBadge?.visibility = View.VISIBLE
+        } else {
+            cardSuperAdminFloatingBadge?.visibility = View.GONE
+        }
+
         if (branchCode.isNotEmpty()) {
             val cachedBranches = AppCache.getBranches(ctx)
             val cachedBranch = cachedBranches?.find { it.code.equalsIgnoreCase(branchCode) }
             if (cachedBranch != null) {
-                val baseName = cachedBranch.name.ifBlank { savedName.ifBlank { "Society Dashboard" } }
-                txtSocietyName.text = if (Util.Session.isSuperAdmin || branchCode.equalsIgnoreCase("SUPERADMIN")) "$baseName 👑 SUPERADMIN" else baseName
+                txtSocietyName.text = cachedBranch.name.ifBlank { savedName.ifBlank { "Society Dashboard" } }
                 val fullAddress = buildString {
                     if (!cachedBranch.address.isNullOrBlank()) append(cachedBranch.address)
                     if (!cachedBranch.city.isNullOrBlank()) {
@@ -115,8 +121,7 @@ class HomeFragment : Fragment() {
                         val address = branch.address ?: ""
                         val city = branch.city ?: ""
 
-                        val baseName = societyName.ifBlank { savedName.ifBlank { "Society Dashboard" } }
-                        txtSocietyName.text = if (Util.Session.isSuperAdmin || branchCode.equalsIgnoreCase("SUPERADMIN")) "$baseName 👑 SUPERADMIN" else baseName
+                        txtSocietyName.text = societyName.ifBlank { savedName.ifBlank { "Society Dashboard" } }
 
                         val fullAddress = buildString {
                             if (address.isNotBlank()) append(address)
@@ -130,7 +135,7 @@ class HomeFragment : Fragment() {
                 } catch (_: Exception) {}
             }
         } else {
-            txtSocietyName.text = if (Util.Session.isSuperAdmin) "Finmac Society 👑 SUPERADMIN" else "Finmac Society"
+            txtSocietyName.text = "Finmac Society"
             txtSocietyDetails.text = "Welcome"
         }
     }
